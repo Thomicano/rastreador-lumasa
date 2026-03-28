@@ -1,0 +1,891 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type">
+</script>
+
+<meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Last-Modified" CONTENT="0">
+<meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, mustrevalidate">
+<meta HTTP-EQUIV="expires" CONTENT="Tue, 01 Jan 2008 00:00:00 GMT">
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<title></title>
+<script src="modernizr/modernizr-custom.js"></script>
+<script>
+if (Modernizr.inputtypes.date) { 
+	html5=1;
+} else {
+	html5=0;
+
+}
+html5=1;
+</script>
+<link rel="stylesheet" href="themes/yaviene.min.css" />
+<link rel="stylesheet" href="themes/jquery.mobile.icons.min.css" />
+<link rel="stylesheet" href="themes/jquery.mobile.structure-1.4.5.min.css" />
+
+<link rel="stylesheet" href="jquery/jquery.mobile.datepicker.css" />
+<link rel="stylesheet" href="jquery/jquery.mobile.datepicker.theme.css">
+
+<script src="themes/jquery-1.11.3.min.js"></script> 
+
+
+<!-- GENERO LOS ESTILOS PARA EL MAPA Y LA CAJA DE TEXTO DONDE TRAE LOS DATOS DE LAS PARADAS | EJECUTO LOS SCRIPT PARA PODER COMPLETAR EL MAPA
+ -->
+<style>
+#map {height:400px;width:100%;margin:0;padding:0;position: relative;}
+#estilo1{color:#FFF;background:#FFF;margin-top:10px}
+.ui-selectmenu.ui-dialog .ui-selectmenu-list {
+    margin-top: 0;
+    hheight: 270px;
+    overflow-y: auto;
+}</style> 
+<link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+<script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+
+<!-- <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script> 
+
+<div id="seleccionarParada" style = "background:#FFF;" ></div>	
+<div id="seleccionarParadaorigen" style = "background:#FFF;" ></div>
+-->	
+
+
+
+
+
+
+<script>
+  //reset type=date inputs to text
+  $( document ).bind( "mobileinit", function(){
+    $.mobile.page.prototype.options.degradeInputs.date = true;
+    //$.mobile.selectmenu.prototype.options.nativeMenu = false;
+  });
+ 
+</script>
+<script src="themes/jquery.mobile-1.4.5.min.js"></script>
+<script src="jquery/external/jquery-ui/datepicker.js"></script>
+<script src="jquery/jquery.mobile.datepicker.js"></script>
+
+	
+
+<script type="text/javascript">
+if (html5 == html5 ) {
+		 $.datepicker.regional['es'] = {
+				 closeText: 'Cerrar',
+				 prevText: '<Ant',
+				 nextText: 'Sig>',
+				 currentText: 'Hoy',
+				 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+				 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
+				 dayNames: ['Domingo', 'Lunes', 'Martes', 'MiÃ©rcoles', 'Jueves', 'Viernes', 'SÃ¡bado'],
+				 dayNamesShort: ['Dom','Lun','Mar','MiÃ©','Juv','Vie','SÃ¡b'],
+				 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sa'],
+				 weekHeader: 'Sm',
+				 dateFormat: 'dd/mm/yy',
+				 firstDay: 1,
+				 isRTL: false,
+				 showMonthAfterYear: true,
+				 yearSuffix: ''
+				 };
+				 $.datepicker.setDefaults($.datepicker.regional['es']);
+				 
+				$(function () {
+				$("#fecha").datepicker({
+				    minDate: 0, maxDate: '1M'
+					    ,dateFormat: "dd/mm/yy"
+				  });
+				$("#fecha_vuelta").datepicker({
+				    minDate: 0, maxDate: '1M'
+					    ,dateFormat: "dd/mm/yy"
+				  });
+				});
+}
+
+
+</script>
+	<style>
+	.ui-datepicker{ z-index: 9999 !important;}	
+	</style>
+  
+<script type="text/javascript">$.mobile.document
+	.on( "listviewcreate", "#provincia-menu", function( e ) {
+		var input,
+		listbox = $( "#provincia-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='provincia-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#provincia-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#provincia-dialog", function( e ) {
+		var form = $( "#provincia-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#provincia-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#provincia-dialog", function(event) {
+      $( "#provincia-busca" ).focus();
+	});
+	
+	$.mobile.document
+	.on( "listviewcreate", "#empresa-menu", function( e ) {
+		var input,
+		listbox = $( "#empresa-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='empresa-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#empresa-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#empresa-dialog", function( e ) {
+		var form = $( "#empresa-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#empresa-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#empresa-dialog", function(event) {
+      $( "#empresa-busca" ).focus();
+	});
+	
+	$.mobile.document
+	.on( "listviewcreate", "#linea-menu", function( e ) {
+		var input,
+		listbox = $( "#linea-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='linea-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#linea-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#linea-dialog", function( e ) {
+		var form = $( "#linea-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#linea-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#linea-dialog", function(event) {
+      $( "#linea-busca" ).focus();
+	});
+	
+	$.mobile.document
+	.on( "listviewcreate", "#origen-menu", function( e ) {
+		var input,
+		listbox = $( "#origen-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='origen-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#origen-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#origen-dialog", function( e ) {
+		var form = $( "#origen-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#origen-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#origen-dialog", function(event) {
+      $( "#origen-busca" ).focus();
+	});
+	
+	$.mobile.document
+	.on( "listviewcreate", "#destino-menu", function( e ) {
+		var input,
+		listbox = $( "#destino-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='destino-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#destino-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#destino-dialog", function( e ) {
+		var form = $( "#destino-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#destino-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#destino-dialog", function(event) {
+      $( "#destino-busca" ).focus();
+	});
+	
+	$.mobile.document
+	.on( "listviewcreate", "#origenp-menu", function( e ) {
+		var input,
+		listbox = $( "#origenp-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='origenp-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#origenp-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#origenp-dialog", function( e ) {
+		var form = $( "#origenp-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#origenp-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#origenp-dialog", function(event) {
+      $( "#origenp-busca" ).focus();
+	});
+	
+	$.mobile.document
+	.on( "listviewcreate", "#destinop-menu", function( e ) {
+		var input,
+		listbox = $( "#destinop-listbox" ),
+		form = listbox.jqmData( "filter-form" ),
+		listview = $( e.target );
+	
+		if ( !form ) {
+			input = $( "<input id='destinop-busca' data-type='search'></input>" );
+			form = $( "<form></form>" ).append( input );
+			input.textinput();
+			$( "#destinop-listbox" )
+			.prepend( form )
+			.jqmData( "filter-form", form );
+		}
+	
+		listview.filterable({ input: input, children: "> li:not(:jqmData(placeholder='true'))" });
+	})
+	.on( "pagebeforeshow pagehide", "#destinop-dialog", function( e ) {
+		var form = $( "#destinop-listbox" ).jqmData( "filter-form" ),
+		placeInDialog = ( e.type === "pagebeforeshow" ),
+		destination = placeInDialog ? $( e.target ).find( ".ui-content" ) : $( "#destinop-listbox" );
+		form
+		.find( "input" )
+		.textinput( "option", "inset", !placeInDialog )
+		.end()
+		.prependTo( destination );
+	})
+	.on( "pageshow", "#destinop-dialog", function(event) {
+      $( "#destinop-busca" ).focus();
+	});
+	
+	</script>
+<script type="text/javascript">
+function onSuccess(data, status)
+{
+    data = $.trim(data);
+}
+
+
+function onError(data, status)
+{
+    // handle an error
+}
+    $(document).ready(function(){
+            var d = new Date();
+            d = d.getTime();
+            if (jQuery('#reloadValue').val().length == 0){
+                jQuery('#reloadValue').val(d);
+                jQuery('body').show();
+            }
+            else{
+                jQuery('#reloadValue').val('');
+                location.reload();
+            }
+            document.getElementById("select_form").reset();
+        //$("select#provincia").attr('option:selected','0');
+		//$('select#provincia option:eq(0)').prop('selected', 'selected');
+		$("select#empresa").attr("disabled","disabled");
+        $("select#linea").attr("disabled","disabled");
+        $("select#origen").attr("disabled","disabled");
+        $("select#destinop").attr("disabled","disabled");
+        $("select#destino").attr("disabled","disabled");
+        $("select#origenp").attr("disabled","disabled");
+        $("select#destinop").attr("disabled","disabled");
+        $("select#rampa").attr("disabled","disabled");
+        $('[type="submit"]').button('disable');
+		 if (html5 == 0) { 
+			 $('#fecha').val('26/03/2026'); 
+			 $("#fecha").attr('readonly', 'readonly');
+		     $('#html5').val('0');
+		 }
+        $("select#provincia").change(function(){
+            $("#result").html("");
+            $("select#empresa").attr("disabled","disabled");
+            $("select#linea").attr("disabled","disabled");
+            $("select#origen").attr("disabled","disabled");
+            $("select#destinop").attr("disabled","disabled");
+            $("select#destino").attr("disabled","disabled");
+            $("select#origenp").attr("disabled","disabled");
+            $("select#rampa").attr("disabled","disabled");
+//            $("select#empresa").html("<option>Espere...</option>");
+            $('select#empresa').selectmenu("refresh");
+            //var id = $("select#provincia option:selected").attr('value');
+            var id = $('#provincia').val();
+            var c = $("#c").val();
+            var a = $("#a").val();
+
+            $.post("select_empresa.php", {id:id, c:c, a:a}, function(data){
+                $("select#empresa").removeAttr("disabled");
+               // $("#empresa").empty();
+                $("select#empresa").html(data);
+                $('[type="submit"]').button('disable');
+                $('#buscar').button('refresh');
+                
+        		//type = "<option>Seleccione...</option>";
+        		type="";
+        		type = "<option></option>";
+                $("select#linea").html(type);
+                $("select#origen").html(type);
+                $("select#destino").html(type);
+                $("select#origenp").html(type);
+                $('select#empresa').selectmenu("refresh");
+                $('select#linea').selectmenu("refresh");
+                $('select#origen').selectmenu("refresh");
+                $('select#destino').selectmenu("refresh");
+                $('select#origenp').selectmenu("refresh");
+                $('select#destinop').selectmenu("refresh");
+                                
+			});
+           
+        });
+
+        $("select#empresa").change(function(){
+            $("#result").html("");
+            $("select#linea").attr("disabled","disabled");
+            $("select#origen").attr("disabled","disabled");
+            $("select#destino").attr("disabled","disabled");
+            
+            $("select#origenp").attr("disabled","disabled");
+            $("select#destinop").attr("disabled","disabled");
+            $("select#rampa").attr("disabled","disabled");
+//            $("select#linea").html("<option>Espere...</option>");
+                $('[type="submit"]').button('disable');
+                $('#buscar').button('refresh');
+    		//type = "<option>Seleccione...</option>";
+    		type="";
+    		type = "<option></option>";
+    		
+            $("select#origen").html(type);
+            $("select#destino").html(type);
+           // $("select#origenp").html(type);
+            $('select#linea').selectmenu("refresh");
+            $('select#origen').selectmenu("refresh");
+           
+            $('select#destino').selectmenu("refresh");
+            $('select#origenp').selectmenu("refresh");
+            $('select#destinop').selectmenu("refresh");
+            
+            var id = $("select#empresa option:selected").attr('value');
+            
+            $.post("select_linea.php", {id:id}, function(data){
+                $("select#linea").removeAttr("disabled");
+                $("select#linea").html(data);
+                $('[type="submit"]').button('disable');
+                $('#buscar').button('refresh');
+        		//type = "<option>Seleccione...</option>";
+        		type="";
+        		type = "<option></option>";
+        		
+                $("select#origen").html(type);
+                $("select#destino").html(type);
+               // $("select#origenp").html(type);
+                $('select#linea').selectmenu("refresh");
+                $('select#origen').selectmenu("refresh");
+                $('select#destino').selectmenu("refresh");
+                $('select#origenp').selectmenu("refresh");
+});
+         
+        });
+        $("select#linea").change(function(){
+            $("#result").html("");
+            $("select#origen").attr("disabled","disabled");
+            $("select#destino").attr("disabled","disabled");
+           // $("select#origenp").attr("disabled","disabled");
+//            $("select#origen").html("<option>Espere...</option>");
+    		//type = "<option>Seleccione...</option>";
+                $('[type="submit"]').button('disable');
+                $('#buscar').button('refresh');
+    		//type = "<option>Seleccione...</option>";
+    		type="";
+    		type = "<option></option>";
+            $("select#rampa").attr("disabled","disabled");
+            $('select#origen').selectmenu("refresh");       
+         $('select#destinop').selectmenu("refresh");
+            $('select#destino').selectmenu("refresh");
+            $('select#origenp').selectmenu("refresh");
+            var id = $("select#linea option:selected").attr('value');
+            if (id !== undefined) { 
+                $.post("select_origen.php", {id:id}, function(data){
+                    $("select#origen").removeAttr("disabled");
+                    $("select#origen").html(data);
+                    $('[type="submit"]').button('disable');
+                    $('#buscar').button('refresh');
+            		//type = "<option>Seleccione...</option>";
+            		type="";
+            		type = "<option></option>";
+                    $("select#origenp").html(type);
+                    $("select#destinop").html(type);
+            		$("select#destino").html(type);
+                    $('select#origen').selectmenu("refresh");
+                    $('select#destinop').selectmenu("refresh");
+            		$('select#destino').selectmenu("refresh");
+                    $('select#origenp').selectmenu("refresh");
+    			});
+            }
+        });
+//********************PRUEBA****************
+
+		$("select#origen").change(function(){
+            $("#result").html("");
+          //  $("select#destinop").html("<option>Espere...</option>");
+            $("select#destino").attr("disabled","disabled");
+            $('select#destino').selectmenu("refresh");
+            var id = $("select#origen option:selected").attr('value');
+
+
+            $.post("select_destino.php", {id:id}, function(data){
+                $("select#destino").removeAttr("disabled");
+                $("select#destino").html(data);
+                $('select#destino').selectmenu("refresh");
+           });
+            
+        });
+
+		$("select#destino").change(function(){
+		    $("#result").html("");
+		//    $("select#destino").html("<option>Espere...</option>");
+		    $("select#origenp").attr("disabled","disabled");
+		    $('select#origenp').selectmenu("refresh");
+		    
+		    var id = $("select#destino option:selected").attr('value');
+
+
+            // TOMA LAS VARIABLES (a (EMPRESA), long (longitud) y latitud,  DESDE LA APP DE ANDROID -->///
+            latitud =  "" ;
+           longitud =  "" ;
+      	//CORDOBA***
+          //  latitud = '-31.42409809';
+         //longitud = '-64.16226517';
+      		//ALICIA	
+      //		 latitud = '-31.942257';
+      //      longitud = '-62.473159';
+		    
+		 
+		    $.post("select_origenp.php", {id:id}, function(data){
+		        $("select#origenp").removeAttr("disabled");
+		        $("select#origenp").html(data);
+		        $("select#origenp").selectmenu("refresh");
+
+		        $.post("select_origenpmapa.php", {id:id,latitud:latitud, longitud:longitud}, function(data){
+					document.getElementById('maporigen').innerHTML = data;
+                // $('#maporigen').html(data);    
+
+             });
+		   });
+		});
+
+
+
+/***********************************
+
+
+        
+        
+      /*  $("select#origen").change(function(){
+            $("#result").html("");
+//            $("select#destino").html("<option>Espere...</option>");
+            $("select#destino").attr("disabled","disabled");
+            $('select#destino').selectmenu("refresh");
+            
+            var id = $("select#origen option:selected").attr('value');
+         
+            $.post("select_destino.php", {id:id}, function(data){
+                $("select#destino").removeAttr("disabled");
+                $("select#destino").html(data);
+                $('select#destino').selectmenu("refresh");
+                            });
+        });*/
+       
+
+        $("select#origenp").change(function(){
+            $("#result").html("");
+          
+//            $("select#origenp").html("<option>Espere...</option>");
+ 			$("select#destinop").attr("disabled","disabled");
+           $('select#destinop').selectmenu("refresh");
+           $("select#rampa").attr("disabled","disabled");
+//            $('#buscar').val("Espere...");
+            $('#buscar').button('refresh');
+            var id = $("select#origenp option:selected").attr('value');
+
+        /*    $.post("select_origenpmapa.php", {id:id}, function(data){
+                $('#maporigen').html(data); 
+
+      }); */
+            
+      
+             $.post("select_destinopmapa.php", {id:id }, function(data){
+                // alert(data);
+				document.getElementById('map').innerHTML = data;
+                //  $('#map').html(data);    
+            
+         
+             });
+
+        	  $.post("select_destinop.php", {id:id}, function(data){
+               $("select#destinop").removeAttr("disabled");
+               $("select#destinop").html(data);
+               $("select#rampa").removeAttr("disabled");
+               $('select#destinop').selectmenu("refresh");
+               $('#buscar').val("Buscar");
+               $('#buscar').button('refresh'); 
+  				  });
+      		        
+			
+    });
+                //alert (data);
+    
+        
+       $("select#destinop").change(function(){
+            $("#result").html("");
+            $(":submit").removeAttr("disabled");
+            $('[type="submit"]').button('enable'); 
+            });
+        
+//        $("#select_form").submit(function(){
+      	  $("#submit").click(function(){
+      	  		var prov = $("select#provincia option:selected").attr('value');
+                var empresa = $("select#empresa option:selected").attr('value');
+                var linea = $("select#linea option:selected").attr('value');
+                var origen = $("select#origen option:selected").attr('value');
+                var destinop = $("select#destinop option:selected").attr('value');
+                var destino = $("select#destino option:selected").attr('value');
+                var origenp = $("select#origenp option:selected").attr('value');
+                if(prov >"0" && empresa >"0" && linea > "0" && origen >"0"  && destinop >"0" && destino > "0" && origenp > "0")
+                {
+                	
+                }
+                else
+                {
+                    $("#result").html("Debe seleccionar todas las opciones!");
+                    return false;
+                }
+                $("input[type='submit']", this)
+                .val("Espere...")
+                .attr('disabled', 'disabled');
+                $('[type="submit"]').button('disable');
+                $('#buscar').button('refresh');
+                
+                return true;
+        });
+
+
+  		
+          
+   	});
+            
+  </script>
+  
+  <script type="text/javascript">
+	    function showContent() {
+	        element = document.getElementById("vuelta");
+	        check = document.getElementById("regreso");
+	        if (check.checked) {
+	            element.style.display='block';
+	            $('#regreso').val('1');
+	        }
+	        else {
+	            element.style.display='none';
+	            $('#regreso').val('0');
+	        }
+	    }
+	</script>
+	
+	<script type="text/javascript">
+	    function showContent2(id) {
+	        element = document.getElementById("iyv");
+	        element1 = document.getElementById("cantidad");
+// 	        element2 = document.getElementById("vuelta");
+	        check = document.getElementById("reserva");
+	        if (id) {
+	            element.style.display='block';
+	            element1.style.display='block';
+// 	            element2.style.display='block';
+	            $('#reserva').val('1');
+	        }
+	        else {
+	            element.style.display='none';
+	            element1.style.display='none';
+// 	            element2.style.display='none';
+	            $('#reserva').val('0');	          
+	        }
+	    }
+	</script>
+
+</head>
+<body>
+	<div data-role="page" id="one" class="type-interior" data-theme="a">
+
+		<div data-role="header" data-theme="a"data-position="fixed">
+			<h3>Ya Viene</h3>
+					</div> 
+        
+		<div data-role="content" class="content">
+			<form id="select_form" method="post"  data-ajax="false" action="respuesta.php">
+			<input id='uc' type ="hidden" name="uc" value="" >
+			<input id="reloadValue" type="hidden" name="reloadValue" value="" />
+				
+						
+				
+				<div data-role="fieldcontain" id="div_provincia">
+					<label for="provincia"> Provincia: </label> 
+					<select name="sel_prov" id="provincia" data-native-menu="false">
+						<option>Seleccione...</option><option value="1">Buenos Aires</option><option value="3">Chaco</option><option value="4">Chubut</option><option value="5">Cordoba</option><option value="6">Corrientes</option><option value="7">Entre Rios</option><option value="10">La Pampa</option><option value="12">Mendoza</option><option value="13">Misiones</option><option value="14">Neuquen</option><option value="15">Rio Negro</option><option value="18">San luis</option><option value="19">Santa Cruz</option><option value="20">Santa Fe</option><input name="c" id="c" type="hidden" value="" /><input name="a" id="a" type="hidden" value="" />					</select>
+				</div>
+						
+				<div data-role="fieldcontain" id="div_empresa">
+					<label for="empresa"> Empresa: </label> <select
+						name="sel_empresa" id="empresa" data-native-menu="false" onchange="javascript:showContent2(1)">
+					</select>
+				</div>
+				
+				<!-- div data-role="fieldcontain" id="div_reserva" style="display: none;">
+				    <label for="reserva">Â¿Que desea hacer?:</label>
+				    <input type="checkbox" id="reserva" name="reserva" style="width: 200px;" onchange="javascript:showContent2()" value="0"
+				     data-role="flipswitch"data-on-text="Comprar" data-off-text="Consultar" data-wrapper-class="custom-size-flipswitch"><p style="text-align: center; margin: auto;margin-top: 8px;"> (Si no activa esta casilla, solo podra consultar horarios pero no solicitar butacas.)</p>
+				</div-->
+				
+				<div data-role="fieldcontain" id="div_reserva" style="display: none;">
+    				<label for="reserva">¿Que desea hacer?:</label>
+    				<fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+        				<input type="radio" name="reserva" id="radio-choice-c" value="0" onchange="javascript:showContent2(0)" >
+						<label for="radio-choice-c">Consultar Horarios</label>
+        				<input type="radio" name="reserva" id="radio-choice-d" value="1" onchange="javascript:showContent2(1)"  checked="checked">
+        				<label for="radio-choice-d">Comprar Boletos</label>
+            		</fieldset>				
+				</div>
+								
+				<div data-role="fieldcontain" id="cantidad" class="spinner" style="display: none;">
+					<label for="Canti">Cantidad de Pasajeros: </label> 				  
+				    <input type="number" value="1" min="1" max="0" name="cant_pasj" id="cant_pasj">				    				    		      
+				</div>	
+				
+				<div data-role="fieldcontain" id="iyv" style="display: none;">
+					<label for="regreso">Si / No</label>
+		        	<label for="iyv">Ida y Vuelta</label>
+        			<input type="checkbox" name="regreso" id="regreso" value="0" onchange="javascript:showContent()">       			
+		        </div>
+		         
+		        <div data-role="fieldcontain">
+					<label for="fecha">Fecha de salida:</label>
+					<input type="text" name="fecha" id="fecha" value="26/03/2026" 
+					data-inline=false readonly="true"/>
+					<a class="ui-icon-calendar ui-btn-icon-right"></a>
+		        </div>
+		        
+		        <div data-role="fieldcontain" id="vuelta" style="display: none;">
+		        	<label for="fecha">Fecha de regreso:</label>		       
+		        	<input type="text" name="fecha_vuelta" id="fecha_vuelta" value="26/03/2026"  
+		        	data-inline=false readonly="true"/>
+		        	<a class="ui-icon-calendar ui-btn-icon-right"></a>		      
+	        	</div>		
+		        			
+				<div data-role="fieldcontain" id="div_linea" style="display: none;" >
+					<label for="linea"> Linea: </label> <select
+						name="sel_linea" id="linea" data-native-menu="false">
+					</select>
+				</div>
+				<div data-role="fieldcontain" id="div_origen" style="display: block;">
+					<label for="origen"> Origen: </label> <select 
+						name="sel_origen" id="origen" data-native-menu="false">
+					</select>
+					
+				</div>
+				<!--  <div data-role="fieldcontain" id="div_mapaDestino"  style="display: block;">
+				    
+				</div>-->
+
+				<!--  <div data-role="fieldcontain" style="float: right; ">
+				<a href="#popupdestino" data-rel="popup"  data-position-to="window" data-transition="flow" 
+				class="ui-btn ui-icon-location ui-btn-icon-right ui-corner-all ui-shadow ui-btn ui-mini ui-btn-inline dos">Mostrar Mapa</a>
+				</div>-->
+				
+				<div data-role="fieldcontain" id="div_destino"   style="display: block;">
+					<label for="destino"> Destino: </label> <select
+						name="sel_destino" id="destino" data-native-menu="false">
+					</select>
+				</div>
+			<!-- 	<div data-role="fieldcontain" style="float: right; ">
+				 <a href="#popuporigen" data-rel="popup" data-position-to="window" data-transition="flow" 
+				class="ui-btn ui-icon-location ui-btn-icon-right ui-corner-all ui-shadow ui-btn ui-mini ui-btn-inline dos">Mostrar Mapa</a>
+				 </div> -->
+				 		 
+				<!-- ACA VA IR EL MAPA CON LOS MARCADORES Y VA A LLEVAR LAS VARIABLES LATITUD Y LONGITUD-->				 
+				<div  data-role="popup" id="popuporigen" style="height:250px;width:330px;" >
+					 <div data-role="header">
+					  <h4></h4>
+					 <a role="button" href="javascript:history.back(-1);" class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-notext ui-btn-left">Close</a>
+					
+					 </div><!-- /header --> 
+					 <div data-role="main"  id="maporigen" style="height:250px;width:330px;" >
+					
+					 </div>
+					 
+					 <div data-role="footer">
+						<span id="infoparadaorigen"> </span> 			 
+					 <input type="hidden" name="sel_origenp" id="origenp" value="">	
+				   	<input type="hidden" name="sel_origenploc" id="origenploc" value="">
+					</div><!-- /footer -->
+				 </div>	
+				 
+				<div data-role="fieldcontain"  id="div_origenp" style="display: none; ">
+				
+					<label for="lorigenp"> Parada donde Asciende: </label>
+				
+					<div style="width:71%; display:inline-block;">
+					 <select
+						name="sel_origenp" id="origenp" data-native-menu="false">
+					</select>
+					</div>
+					<div style="display:inline-block; position:absolute; right:0%;">
+					 <a href="#popuporigen" data-rel="popup" data-position-to="window" data-transition="flow" 
+					class="ui-btn ui-corner-all ui-shadow ui-btn ui-mini ui-btn-inline dos" style="width:20px; height:23px; margin-top:9px; background-image: url('./img/parada_bus.png'); background-position: 50% 50%; background-size: 36px; background-repeat: no-repeat; "></a>
+
+					</div>
+				</div>
+				
+				<!-- /////////////////////////////////////////// -->
+				 
+				 
+
+				 
+				 
+				 <!-- ACA VA IR EL MAPA CON LOS MARCADORES Y VA A LLEVAR LAS VARIABLES LATITUD Y LONGITUD-->				 
+				<div  data-role="popup" id="popupdestino" style="height:250px;width:330px;" >
+					 <div data-role="header">
+					 <h4></h4>
+					 <a role="button" href="javascript:history.back(-1);" class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-notext ui-btn-left">Close</a>
+					
+					 </div>
+					<!-- <div data-role="content" id="map" class="content"> </div>--> 
+					<div data-role="main" id="map" style="height:250px;width:330px;">
+					 
+					 </div>
+					 <div data-role="footer">
+						
+					 	 <span id="infoparada"> </span> 		 
+					 <input type="hidden" name="sel_destinop" id="destinop" value="">	
+					  <input type="hidden" name="sel_destinoloc" id="destinoploc" value="">
+
+					</div><!-- /footer -->
+				 </div>
+				
+				<div data-role="fieldcontain"  id="div_destinop" style="display: none;">
+				
+					<label for="ldestinop"> Parada donde Desciende: </label> 
+					<div style="width:71%; display:inline-block;">
+					<select
+						name="sel_destinop" id="destinop" data-native-menu="false"  >
+					</select>
+					</div>
+					<div style="display:inline-block; position:absolute; right:0%;">
+					<a href="#popupdestino" data-rel="popup"  data-position-to="window" data-transition="flow" 
+					class="ui-btn ui-corner-all ui-shadow ui-btn ui-mini ui-btn-inline dos" style="width:20px; height:23px; margin-top:9px; background-image: url('./img/parada_bus.png'); background-position: 50% 50%; background-size: 36px; background-repeat: no-repeat; "></a>
+					</div>
+
+				</div>
+				 
+
+				<div data-role="fieldcontain"  id="div_rampa" style="display: none;">
+				<label for="rampa">Ver los coches con rampa para discapacitados:</label>
+					<select name="sel_rampa" id="rampa" data-role="flipswitch" data-theme="b">
+						<option value="off">No</option>
+						<option value="on">Si</option>
+					</select> 
+				</div>
+				
+				<div data-role="fieldcontain"  id="div_buscar" >
+				<input type="submit" value="Buscar" name="buscar" id="buscar" class="show-page-loading-msg"/>
+				</div>
+				<input type="hidden" value="1" name="html5" id="html5" />
+				<script>
+
+				$(document).on( "click", ".show-page-loading-msg", function() {
+				$.mobile.loading( 'show');
+				});
+				</script>
+			</form>
+			<div id="result"></div>
+		</div>
+	</div>
+</body>
+</html>

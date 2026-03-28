@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Horarios Interurbano</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración para emular shadcn/ui -->
+    <script>
+        tailwind.config = {
+            darkMode: ["class"],
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(214.3 31.8% 91.4%)",
+                        input: "hsl(214.3 31.8% 91.4%)",
+                        ring: "hsl(222.2 84% 4.9%)",
+                        background: "hsl(0 0% 100%)",
+                        foreground: "hsl(222.2 84% 4.9%)",
+                        primary: {
+                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(222.2 47.4% 11.2%)",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(215.4 16.3% 46.9%)",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(222.2 47.4% 11.2%)",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(0 84.2% 60.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        card: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "0.5rem",
+                        md: "calc(0.5rem - 2px)",
+                        sm: "calc(0.5rem - 4px)",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            * {
+                @apply border-border;
+            }
+            body {
+                @apply bg-background text-foreground font-sans antialiased selection:bg-primary/10 overscroll-y-none;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+        
+        /* Animaciones fluidas para el contenedor de las tarjetas */
+        #lista-horarios {
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .fade-exit {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        .fade-enter {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Estilos base de componentes shadcn/ui emulados por JS */
+        .shadcn-btn-outline {
+            @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 disabled:pointer-events-none disabled:opacity-50 w-full;
+        }
+    </style>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen pb-8">
+
+    <!-- Header / Navbar estilo App Nativa -->
+    <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div class="container flex h-14 items-center px-4 max-w-md mx-auto">
+            <div class="flex items-center gap-2 font-semibold text-primary">
+                <i data-lucide="map" class="h-5 w-5"></i>
+                <span class="tracking-tight text-lg">Horarios URB</span>
+            </div>
+            <div class="ml-auto flex items-center">
+                <span id="fecha-hoy" class="text-xs font-medium text-muted-foreground capitalize">Actualizando...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container px-4 py-6 max-w-md mx-auto space-y-6">
+        
+        <!-- Tabs Fluido tipo shadcn (List) -->
+        <div class="inline-flex h-10 w-full items-center justify-center rounded-md bg-muted p-1 text-muted-foreground shadow-sm">
+            <button 
+                id="tab-ida" 
+                onclick="cambiarTab('ida')" 
+                class="inline-flex w-full items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm" 
+                data-state="active">
+                <i data-lucide="arrow-right" class="w-4 h-4 mr-2"></i>
+                Ida
+            </button>
+            <button 
+                id="tab-vuelta" 
+                onclick="cambiarTab('vuelta')" 
+                class="inline-flex w-full items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm" 
+                data-state="inactive">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                Vuelta
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Header de Ruta y Estado del día -->
+            <div class="flex items-center justify-between">
+                <h2 id="titulo-ruta" class="text-lg font-semibold tracking-tight text-primary">Despeñaderos a Córdoba</h2>
+                <span id="badge-dia" class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground bg-secondary/50 border-border">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse mr-2"></span>
+                    Cargando
+                </span>
+            </div>
+
+            <!-- Contenedor Dinámico: Loaders, Tarjetas o Empty State -->
+            <div id="lista-horarios" class="space-y-4 fade-enter">
+                <!-- Se inyecta contenido vía JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let tabActual = 'ida'; // Estado global de la pestaña actual
+
+        // Variables de DOM
+        const listaDOM = document.getElementById("lista-horarios");
+        const tabIda = document.getElementById('tab-ida');
+        const tabVuelta = document.getElementById('tab-vuelta');
+        const tituloRuta = document.getElementById('titulo-ruta');
+        const badgeDia = document.getElementById('badge-dia');
+        const fechaHoy = document.getElementById('fecha-hoy');
+
+        // Formato Local de Fecha
+        const setFechaHoy = () => {
+            const hoy = new Date();
+            const opciones = { weekday: 'short', day: '2-digit', month: 'short' };
+            fechaHoy.textContent = hoy.toLocaleDateString('es-AR', opciones).replace('.', '');
+        };
+
+        // UI: Skeleton Loader
+        const getSkeletonHTML = () => {
+            return [1, 2, 3].map(() => `
+                <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-5 space-y-5 animate-pulse">
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-3">
+                            <div class="h-8 w-20 bg-muted rounded-md"></div>
+                            <div class="h-4 w-24 bg-muted rounded-md"></div>
+                        </div>
+                    </div>
+                    <div class="h-10 w-full bg-muted rounded-md"></div>
+                </div>
+            `).join('');
+        };
+
+        // UI: Estado Vacío
+        const getEmptyStateHTML = () => {
+            return `
+                <div class="flex flex-col items-center justify-center py-12 text-center px-4 border rounded-lg border-dashed bg-muted/40 h-[300px]">
+                    <div class="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                        <i data-lucide="inbox" class="w-6 h-6 text-muted-foreground"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold tracking-tight">Sin servicios</h3>
+                    <p class="text-sm text-muted-foreground mt-2 max-w-[260px]">No se encontraron horarios para el resto del día en esta ruta.</p>
+                </div>
+            `;
+        };
+
+        // UI: Estado Error
+        const getErrorStateHTML = () => {
+            return `
+                <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive shadow-sm">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="alert-circle" class="h-5 w-5"></i>
+                        <h4 class="font-semibold tracking-tight">Error de conexión</h4>
+                    </div>
+                    <p class="text-sm opacity-90">Ocurrió un problema conectando al servidor central. Intenta nuevamente.</p>
+                    <button onclick="cargarHorarios()" class="mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium border border-destructive/20 bg-background hover:bg-destructive/10 h-9 px-4 py-2 w-full transition-colors text-foreground">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+        };
+
+        // UI: Tarjeta de Horario
+        const getCardHTML = (horarios) => {
+            return horarios.map(cole => {
+                const horaCorta = cole.hora_salida ? cole.hora_salida.substring(0, 5) : "--:--";
+                const esLumasa = cole.empresa.trim().toLowerCase() === "lumasa";
+                
+                return `
+                    <div class="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-primary/20 group">
+                        <div class="p-5 flex flex-col gap-5">
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col">
+                                    <span class="text-[2.5rem] leading-none font-bold tracking-tight text-primary">${horaCorta}</span>
+                                    <div class="flex items-center gap-2 mt-3 text-muted-foreground">
+                                        <i data-lucide="bus" class="w-4 h-4"></i>
+                                        <span class="text-sm font-medium uppercase tracking-wider text-foreground/80">${cole.empresa}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button 
+                                ${!esLumasa ? 'disabled' : ''} 
+                                class="shadcn-btn-outline"
+                            >
+                                <i data-lucide="${esLumasa ? 'map-pin' : 'map-pin-off'}" class="w-4 h-4 mr-2 ${!esLumasa ? 'opacity-50' : ''}"></i>
+                                Rastrear Unidad
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // Lógica de Renderizado y Fetch
+        async function cargarHorarios() {
+            // Animación de salida + Skeleton
+            listaDOM.classList.remove('fade-enter');
+            listaDOM.classList.add('fade-exit');
+            
+            setTimeout(() => {
+                listaDOM.innerHTML = getSkeletonHTML();
+                badgeDia.innerHTML = '<span class="w-2 h-2 rounded-full bg-primary animate-pulse mr-2"></span> Buscando';
+                lucide.createIcons();
+                
+                listaDOM.classList.remove('fade-exit');
+                listaDOM.classList.add('fade-enter');
+            }, 150);
+
+            // Parámetros basados en Tab Activo
+            const origen = tabActual === 'ida' ? 'Despeñaderos' : 'Córdoba';
+            const destino = tabActual === 'ida' ? 'Córdoba' : 'Despeñaderos';
+            
+            try {
+                // Minimum loading time simulation to show premium skeleton loader UX
+                const [respuesta, _] = await Promise.all([
+                    fetch(\`/api/horarios?origen=\${encodeURIComponent(origen)}&destino=\${encodeURIComponent(destino)}\`),
+                    new Promise(r => setTimeout(r, 600)) // 600ms artificial delay
+                ]);
+
+                if (!respuesta.ok) throw new Error("Network status was NOT ok");
+                
+                const datos = await respuesta.json();
+
+                // Actualizar Badge de Día
+                badgeDia.innerHTML = datos.tipo_dia_detectado || "Desconocido";
+                badgeDia.className = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary-foreground bg-secondary/80";
+
+                // Fade transición de contenido real
+                listaDOM.classList.remove('fade-enter');
+                listaDOM.classList.add('fade-exit');
+
+                setTimeout(() => {
+                    const arrayHorarios = datos.horarios || [];
+                    
+                    if (arrayHorarios.length === 0) {
+                        listaDOM.innerHTML = getEmptyStateHTML();
+                    } else {
+                        listaDOM.innerHTML = getCardHTML(arrayHorarios);
+                    }
+                    
+                    lucide.createIcons();
+                    listaDOM.classList.remove('fade-exit');
+                    listaDOM.classList.add('fade-enter');
+                }, 200);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                setTimeout(() => {
+                    listaDOM.innerHTML = getErrorStateHTML();
+                    badgeDia.innerHTML = "Desconectado";
+                    badgeDia.className = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-destructive bg-destructive/10";
+                    lucide.createIcons();
+                }, 150);
+            }
+        }
+
+        // Interacción de Cambio de Tab
+        const cambiarTab = (destino) => {
+            if (tabActual === destino) return;
+            tabActual = destino;
+
+            // Transiciones UI Activo/Inactivo
+            tabIda.setAttribute('data-state', destino === 'ida' ? 'active' : 'inactive');
+            tabVuelta.setAttribute('data-state', destino === 'vuelta' ? 'active' : 'inactive');
+
+            // Actualizar Título
+            tituloRuta.textContent = destino === 'ida' ? "Despeñaderos a Córdoba" : "Córdoba a Despeñaderos";
+
+            cargarHorarios();
+        };
+
+        // Bootstrap al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            setFechaHoy();
+            lucide.createIcons();
+            cargarHorarios();
+        });
+    </script>
+</body>
+</html>
