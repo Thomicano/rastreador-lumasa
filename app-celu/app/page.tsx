@@ -313,7 +313,9 @@ export default function HorariosApp() {
     const hora_servicio = cole.hora_salida.substring(0, 5);
 
     // Usamos el hostname dinámico de la ventana para apuntar siempre a la misma máquina en la LAN (ya sea localhost o 192.168.1.8)
-    const apiUrl = `http://${window.location.hostname}:8000/api/rastrear_automatico?origen_id=${origen_id}&destino_id=${destino_id}&hora_servicio=${hora_servicio}`;
+    // Usamos la variable de entorno para la nube, y dejamos localhost como plan B por si probás en tu PC
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const apiUrl = `${baseUrl}/api/rastrear_automatico?origen_id=${origen_id}&destino_id=${destino_id}&hora_servicio=${hora_servicio}`;
 
     try {
       const response = await fetch(apiUrl);
